@@ -1,4 +1,4 @@
-Asyncio MOEX ISS API
+Async httpx MOEX ISS API
 ====================
 
 Реализация на основе asyncio части  запросов к `MOEX Informational & Statistical Server <https://www.moex.com/a2193>`_.

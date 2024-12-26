@@ -2,9 +2,9 @@
 from collections.abc import Iterable
 from typing import Final
 
-import aiohttp
+import httpx
 
-from aiomoex import client
+from amoex import client
 
 # Режимы по умолчанию для запросов
 DEFAULT_ENGINE: Final = "stock"
@@ -12,6 +12,7 @@ DEFAULT_MARKET: Final = "shares"
 DEFAULT_BOARD: Final = "TQBR"
 # Ключевые плейсхолдеры и константы для запросов
 SECURITIES: Final = "securities"
+SERIES: Final = "series"
 CANDLE_BORDERS: Final = "candleborders"
 CANDLES: Final = "candles"
 
@@ -19,6 +20,7 @@ CANDLES: Final = "candles"
 def make_url(
     *,
     history: bool | None = None,
+    statistics: bool | None = None,
     engine: str | None = None,
     market: str | None = None,
     board: str | None = None,
@@ -29,6 +31,9 @@ def make_url(
     url_parts = ["https://iss.moex.com/iss"]
     if history:
         url_parts.append("/history")
+    elif statistics:
+        url_parts.append("/statistics")
+
     if engine:
         url_parts.append(f"/engines/{engine}")
     if market:
@@ -96,15 +101,15 @@ def get_table(table_dict: client.TablesDict, table_name: str) -> client.Table:
 
 
 async def get_short_data(
-    session: aiohttp.ClientSession,
+    http_client: httpx.AsyncClient,
     url: str,
     table_name: str,
     query: client.WebQuery | None = None,
 ) -> client.Table:
     """Получить данные для запроса с выдачей всей информации за раз.
 
-    :param session:
-        Сессия http соединения.
+    :param http_client:
+        HTTP клиент.
     :param url:
         URL запроса.
     :param query:
@@ -115,21 +120,21 @@ async def get_short_data(
     :return:
         Конкретная таблица из запроса.
     """
-    iss = client.ISSClient(session, url, query)
+    iss = client.ISSClient(http_client, url, query)
     table_dict = await iss.get()
     return get_table(table_dict, table_name)
 
 
 async def get_long_data(
-    session: aiohttp.ClientSession,
+    http_client: httpx.AsyncClient,
     url: str,
     table_name: str,
     query: client.WebQuery | None = None,
 ) -> client.Table:
     """Получить данные для запроса, в котором информация выдается несколькими блоками.
 
-    :param session:
-        Сессия http соединения.
+    :param http_client:
+        HTTP клиент.
     :param url:
         URL запроса.
     :param query:
@@ -140,6 +145,6 @@ async def get_long_data(
     :return:
         Конкретная таблица из запроса.
     """
-    iss = client.ISSClient(session, url, query)
+    iss = client.ISSClient(http_client, url, query)
     table_dict = await iss.get_all()
     return get_table(table_dict, table_name)

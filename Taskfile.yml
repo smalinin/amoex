@@ -1,7 +1,7 @@
 version: "3"
 
 vars:
-  APP: aiomoex
+  APP: amoex
   TESTS: tests
   PYTHON: 3.12
   TOOLS: go-task rye

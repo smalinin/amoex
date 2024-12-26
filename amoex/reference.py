@@ -1,13 +1,16 @@
 """Функции для получения справочной информации."""
 from collections.abc import Iterable
 
-import aiohttp
+import httpx
 
-from aiomoex import client, request_helpers
-from aiomoex.request_helpers import SECURITIES
+from amoex import client, request_helpers
+from amoex.request_helpers import SECURITIES, SERIES
 
 
-async def get_reference(session: aiohttp.ClientSession, placeholder: str = "boards") -> client.Table:
+async def get_reference(
+    http_client: httpx.AsyncClient,
+    placeholder: str = "boards"
+) -> client.Table:
     """Получить перечень доступных значений плейсхолдера в адресе запроса.
 
     Например в описание запроса https://iss.moex.com/iss/reference/32 присутствует следующий адрес
@@ -16,8 +19,8 @@ async def get_reference(session: aiohttp.ClientSession, placeholder: str = "boar
 
     Описание запроса - https://iss.moex.com/iss/reference/28
 
-    :param session:
-        Сессия http соединения.
+    :param http_client:
+        Http клиент.
     :param placeholder:
         Наименование плейсхолдера в адресе запроса: engines, markets, boards, boardgroups, durations,
         securitytypes, securitygroups, securitycollections.
@@ -26,11 +29,11 @@ async def get_reference(session: aiohttp.ClientSession, placeholder: str = "boar
         Список словарей, которые напрямую конвертируется в pandas.DataFrame.
     """
     url = request_helpers.make_url(ending="index")
-    return await request_helpers.get_short_data(session, url, placeholder)
+    return await request_helpers.get_short_data(http_client, url, placeholder)
 
 
 async def find_securities(
-    session: aiohttp.ClientSession,
+    http_client: httpx.AsyncClient,
     string: str,
     columns: Iterable[str] | None = ("secid", "regnumber"),
 ) -> client.Table:
@@ -42,8 +45,8 @@ async def find_securities(
 
     Описание запроса - https://iss.moex.com/iss/reference/5
 
-    :param session:
-        Сессия http соединения.
+    :param http_client:
+        Http клиент.
     :param string:
         Часть Кода, Названия, ISIN, Идентификатора Эмитента, Номера гос.регистрации.
     :param columns:
@@ -55,4 +58,46 @@ async def find_securities(
     url = request_helpers.make_url(ending=SECURITIES)
     table = SECURITIES
     query = request_helpers.make_query(question=string, table=table, columns=columns)
-    return await request_helpers.get_short_data(session, url, table, query)
+    return await request_helpers.get_short_data(http_client, url, table, query)
+
+
+async def get_statistics_series(
+    http_client: httpx.AsyncClient,
+    asset_code: str | None = None,
+    show_expired: bool | None = True,
+    market: str = 'forts',
+    engine: str = 'futures',
+) -> client.Table:
+    """Получить список статистики
+
+
+    https://iss.moex.com/iss/reference/151
+
+    :param http_client:
+        HTTP клиент.
+    :param asset_code:
+        Код базового актива
+    :param show_expired:
+        Показывать уже не торгующиеся серии
+    :param market:
+        Рынок - по умолчанию акции.
+    :param engine:
+        Движок - по умолчанию акции.
+
+    :return:
+        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+    """
+    url = request_helpers.make_url(
+        statistics=True,
+        history=False,
+        engine=engine,
+        market=market,
+        ending=SERIES,
+    )
+    table = SERIES
+    query = request_helpers.make_query()
+    if asset_code:
+        query["asset_code"] = asset_code
+    if show_expired:
+        query["show_expired"] = 1
+    return await request_helpers.get_short_data(http_client, url, table, query)

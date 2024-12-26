@@ -8,15 +8,15 @@
 - Полный перечень запросов https://iss.moex.com/iss/reference/
 - Дополнительное описание https://fs.moex.com/files/6523
 """
-from aiomoex.candles import (
+from amoex.candles import (
     get_board_candle_borders,
     get_board_candles,
     get_market_candle_borders,
     get_market_candles,
 )
-from aiomoex.client import ISSClient, TableRow, TablesDict, Values
-from aiomoex.history import get_board_dates, get_board_history, get_board_securities, get_market_history
-from aiomoex.reference import find_securities, get_reference
+from amoex.client import ISSClient, TableRow, TablesDict, Values
+from amoex.history import get_board_dates, get_board_history, get_board_securities, get_market_history
+from amoex.reference import find_securities, get_reference
 
 __all__ = [
     "get_board_candle_borders",
