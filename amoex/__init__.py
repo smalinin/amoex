@@ -1,12 +1,12 @@
-"""Реализация части запросов к MOEX ISS.
+"""Implementation of some requests to MOEX ISS.
 
-Результаты запросов являются списками словарей и могут быть конвертированы в pandas.DataFrame.
+The results of the requests are lists of dictionaries and can be converted into pandas.DataFrame.
 
-Работа функций-запросов базируется на универсальном клиенте, позволяющем осуществлять произвольные
-запросы к ISS MOEX, поэтому перечень доступных функций-запросов может быть при необходимости дополнен:
+The operation of the request functions is based on a universal client that allows making arbitrary
+requests to ISS MOEX, so the list of available request functions can be expanded if necessary:
 
-- Полный перечень запросов https://iss.moex.com/iss/reference/
-- Дополнительное описание https://fs.moex.com/files/6523
+- Full list of requests https://iss.moex.com/iss/reference/
+- Additional description https://fs.moex.com/files/6523
 """
 from amoex.candles import (
     get_board_candle_borders,

@@ -1,4 +1,4 @@
-"""Функции для получения данных об исторических дневных котировках."""
+"""Functions to retrieve data on historical daily quotes."""
 from collections.abc import Iterable
 import httpx
 
@@ -12,21 +12,21 @@ async def get_board_dates(
     market: str = DEFAULT_MARKET,
     engine: str = DEFAULT_ENGINE,
 ) -> client.Table:
-    """Получить интервал дат, доступных в истории для рынка по заданному режиму торгов.
+    """Get the date range available in the history for the market in the specified trading mode.
 
-    Описание запроса - https://iss.moex.com/iss/reference/26
+    Request description - https://iss.moex.com/iss/reference/26
 
     :param http_client:
-        HTTP клиент.
+        HTTP client.
     :param board:
-        Режим торгов - по умолчанию основной режим торгов T+2.
+        Trading mode - default is the main trading mode T+2.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список из одного элемента - словаря с ключами 'from' и 'till'.
+        A list with one element - a dictionary with keys 'from' and 'till'.
     """
     url = request_helpers.make_url(
         history=True,
@@ -47,27 +47,27 @@ async def get_board_securities(
     market: str = DEFAULT_MARKET,
     engine: str = DEFAULT_ENGINE,
 ) -> client.Table:
-    """Получить таблицу инструментов по режиму торгов со вспомогательной информацией.
+    """Get a table of instruments in the trading mode with auxiliary information.
 
-    Описание запроса - https://iss.moex.com/iss/reference/32
+    Request description - https://iss.moex.com/iss/reference/32
 
     :param http_client:
-        HTTP клиент.
+        HTTP client.
     :param table:
-        Таблица с данными, которую нужно вернуть: securities - справочник торгуемых ценных бумаг,
-        marketdata - данные с результатами торгов текущего дня.
+        Data table to return: securities - directory of traded securities,
+        marketdata - data with the results of today's trades.
     :param columns:
-        Кортеж столбцов, которые нужно загрузить - по умолчанию тикер, номер государственно регистрации,
-        размер лота и краткое название. Если пустой или None, то загружаются все столбцы.
+        Tuple of columns to load - default is ticker, state registration number,
+        lot size, and short name. If empty or None, all columns are loaded.
     :param board:
-        Режим торгов - по умолчанию основной режим торгов T+2.
+        Trading mode - default is the main trading mode T+2.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        A list of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(engine=engine, market=market, board=board, ending=SECURITIES)
     query = request_helpers.make_query(table=table, columns=columns)
@@ -83,30 +83,30 @@ async def get_market_history(
     market: str = DEFAULT_MARKET,
     engine: str = DEFAULT_ENGINE,
 ) -> client.Table:
-    """Получить историю по одной бумаге на рынке для всех режимов торгов за интервал дат.
+    """Get the history of a single security on the market for all trading modes over a date range.
 
-    На одну дату может приходиться несколько значений, если торги шли в нескольких режимах.
+    There may be multiple values for a single date if trading occurred in multiple modes.
 
-    Описание запроса - https://iss.moex.com/iss/reference/63
+    Request description - https://iss.moex.com/iss/reference/63
 
     :param http_client:
-        HTTP клиент.
+        HTTP client.
     :param security:
-        Тикер ценной бумаги.
+        Security ticker.
     :param start:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены с начала истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded from the beginning of history.
     :param end:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены до конца истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded until the end of history.
     :param columns:
-        Кортеж столбцов, которые нужно загрузить - по умолчанию режим торгов, дата торгов, цена закрытия
-        и объем в штуках и стоимости. Если пустой или None, то загружаются все столбцы.
+        Tuple of columns to load - default is trading mode, trade date, closing price,
+        volume in pieces, and value. If empty or None, all columns are loaded.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        A list of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(history=True, engine=engine, market=market, security=security)
     table = "history"
@@ -124,30 +124,30 @@ async def get_board_history(
     market: str = DEFAULT_MARKET,
     engine: str = DEFAULT_ENGINE,
 ) -> client.Table:
-    """Получить историю торгов для указанной бумаги в указанном режиме торгов за указанный интервал дат.
+    """Get the trading history for the specified security in the specified trading mode over the specified date range.
 
-    Описание запроса - https://iss.moex.com/iss/reference/65
+    Request description - https://iss.moex.com/iss/reference/65
 
     :param http_client:
-        HTTP клиент.
+        HTTP client.
     :param security:
-        Тикер ценной бумаги.
+        Security ticker.
     :param start:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены с начала истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded from the beginning of history.
     :param end:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены до конца истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded until the end of history.
     :param columns:
-        Кортеж столбцов, которые нужно загрузить - по умолчанию режим торгов, дата торгов, цена закрытия
-        и объем в штуках и стоимости. Если пустой или None, то загружаются все столбцы.
+        Tuple of columns to load - default is trading mode, trade date, closing price,
+        volume in pieces, and value. If empty or None, all columns are loaded.
     :param board:
-        Режим торгов - по умолчанию основной режим торгов T+2.
+        Trading mode - default is the main trading mode T+2.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        A list of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(
         history=True,

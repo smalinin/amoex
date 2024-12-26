@@ -1,4 +1,4 @@
-"""Вспомогательные функции для построения запросов."""
+"""Helper functions for building requests."""
 from collections.abc import Iterable
 from typing import Final
 
@@ -6,11 +6,11 @@ import httpx
 
 from amoex import client
 
-# Режимы по умолчанию для запросов
+# Default modes for requests
 DEFAULT_ENGINE: Final = "stock"
 DEFAULT_MARKET: Final = "shares"
 DEFAULT_BOARD: Final = "TQBR"
-# Ключевые плейсхолдеры и константы для запросов
+# Key placeholders and constants for requests
 SECURITIES: Final = "securities"
 SERIES: Final = "series"
 CANDLE_BORDERS: Final = "candleborders"
@@ -27,7 +27,7 @@ def make_url(
     security: str | None = None,
     ending: str | None = None,
 ) -> str:
-    """Формирует URL для запроса."""
+    """Forms the URL for the request."""
     url_parts = ["https://iss.moex.com/iss"]
     if history:
         url_parts.append("/history")
@@ -57,23 +57,23 @@ def make_query(
     table: str | None = None,
     columns: Iterable[str] | None = None,
 ) -> client.WebQuery:
-    """Формирует дополнительные параметры запроса к MOEX ISS.
+    """Forms additional request parameters for MOEX ISS.
 
     :param question:
-        Строка с частью характеристик бумаги для поиска.
+        String with part of the security characteristics for search.
     :param interval:
-        Размер свечки.
+        Candle size.
     :param start:
-        Начальная дата котировок.
+        Start date of quotes.
     :param end:
-        Конечная дата котировок.
+        End date of quotes.
     :param table:
-        Таблица, которую нужно загрузить (для запросов, предполагающих наличие нескольких таблиц).
+        Table to be loaded (for requests assuming the presence of multiple tables).
     :param columns:
-        Кортеж столбцов, которые нужно загрузить.
+        Tuple of columns to be loaded.
 
     :return:
-        Словарь с дополнительными параметрами запроса.
+        Dictionary with additional request parameters.
     """
     query: client.WebQuery = {}
     if question:
@@ -92,11 +92,11 @@ def make_query(
 
 
 def get_table(table_dict: client.TablesDict, table_name: str) -> client.Table:
-    """Извлекает конкретную таблицу из данных."""
+    """Extracts a specific table from the data."""
     try:
         table = table_dict[table_name]
     except KeyError as err:
-        raise client.ISSMoexError(f"Отсутствует таблица {table_name} в данных") from err
+        raise client.ISSMoexError(f"Table {table_name} is missing in the data") from err
     return table
 
 
@@ -106,19 +106,19 @@ async def get_short_data(
     table_name: str,
     query: client.WebQuery | None = None,
 ) -> client.Table:
-    """Получить данные для запроса с выдачей всей информации за раз.
+    """Get data for a request with all information returned at once.
 
     :param http_client:
-        HTTP клиент.
+        HTTP client.
     :param url:
-        URL запроса.
+        Request URL.
     :param query:
-        Дополнительные параметры запроса - None, если нет параметров.
+        Additional request parameters - None if no parameters.
     :param table_name:
-        Таблица, которую нужно выбрать.
+        Table to be selected.
 
     :return:
-        Конкретная таблица из запроса.
+        Specific table from the request.
     """
     iss = client.ISSClient(http_client, url, query)
     table_dict = await iss.get()
@@ -131,19 +131,19 @@ async def get_long_data(
     table_name: str,
     query: client.WebQuery | None = None,
 ) -> client.Table:
-    """Получить данные для запроса, в котором информация выдается несколькими блоками.
+    """Get data for a request where information is returned in multiple blocks.
 
     :param http_client:
-        HTTP клиент.
+        HTTP client.
     :param url:
-        URL запроса.
+        Request URL.
     :param query:
-        Дополнительные параметры запроса - None, если нет параметров.
+        Additional request parameters - None if no parameters.
     :param table_name:
-        Таблица, которую нужно выбрать.
+        Table to be selected.
 
     :return:
-        Конкретная таблица из запроса.
+        Specific table from the request.
     """
     iss = client.ISSClient(http_client, url, query)
     table_dict = await iss.get_all()

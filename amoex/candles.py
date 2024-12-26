@@ -1,4 +1,4 @@
-"""Функции для получения информации о свечках."""
+"""Functions to get information about candles."""
 
 from collections.abc import Iterable
 import httpx
@@ -12,7 +12,6 @@ from amoex.request_helpers import (
     DEFAULT_MARKET,
 )
 
-
 CANDLES_M1 = 1
 CANDLES_M10 = 10
 CANDLES_M60 = 60
@@ -22,28 +21,27 @@ CANDLES_M = 31
 CANDLES_Q = 4
 
 
-
 async def get_market_candle_borders(
     http_client: httpx.AsyncClient,
     security: str,
     market: str = DEFAULT_MARKET,
     engine: str = DEFAULT_ENGINE,
 ) -> client.Table:
-    """Получить таблицу интервалов доступных дат для всех режимов торгов.
+    """Get a table of available date intervals for all trading modes.
 
-    Описание запроса - https://iss.moex.com/iss/reference/156
+    Request description - https://iss.moex.com/iss/reference/156
 
     :param client:
-        HTTP клиент.
+        HTTP client.
     :param security:
-        Тикер ценной бумаги.
+        Ticker symbol of the security.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        A list of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(
         engine=engine,
@@ -62,23 +60,23 @@ async def get_board_candle_borders(
     market: str = DEFAULT_MARKET,
     engine: str = DEFAULT_ENGINE,
 ) -> client.Table:
-    """Получить таблицу интервалов доступных дат для указанного режиме торгов.
+    """Get a table of available date intervals for the specified trading mode.
 
-    Описание запроса - https://iss.moex.com/iss/reference/48
+    Request description - https://iss.moex.com/iss/reference/48
 
     :param client:
-        HTTP клиент.
+        HTTP client.
     :param security:
-        Тикер ценной бумаги
+        Ticker symbol of the security.
     :param board:
-        Режим торгов - по умолчанию основной режим торгов T+2.
+        Trading mode - default is the main trading mode T+2.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame
+        A list of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(
         engine=engine,
@@ -101,32 +99,30 @@ async def get_market_candles(
     engine: str = DEFAULT_ENGINE,
     columns: Iterable[str] | None = ("begin", "open", "high", "low", "close", "volume"),
 ) -> client.Table:
-    """Получить свечи в формате HLOCV указанного инструмента на рынке для основного режима торгов.
+    """Get candles in HLOCV format for the specified instrument on the market for the main trading mode.
 
-    Если торговля идет в нескольких основных режимах, то на один интервал времени может быть выдано
-    несколько свечек - по свечке на каждый режим. Предположительно такая ситуация может произойти для
-    свечек длиннее 1 дня.
+    If trading occurs in multiple main modes, multiple candles may be returned for a single time interval - one candle per mode. This situation is likely to occur for candles longer than 1 day.
 
-    Описание запроса - https://iss.moex.com/iss/reference/155
+    Request description - https://iss.moex.com/iss/reference/155
 
     :param client:
-        HTTP клиент.
+        HTTP client.
     :param security:
-        Тикер ценной бумаги.
+        Ticker symbol of the security.
     :param interval:
-        Размер свечки - целое число 1 (1 минута), 10 (10 минут), 60 (1 час), 24 (1 день), 7 (1 неделя),
-        31 (1 месяц) или 4 (1 квартал). По умолчанию дневные данные.
+        Candle size - an integer 1 (1 minute), 10 (10 minutes), 60 (1 hour), 24 (1 day), 7 (1 week),
+        31 (1 month), or 4 (1 quarter). Default is daily data.
     :param start:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены с начала истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded from the beginning of history.
     :param end:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены до конца истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded until the end of history.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        A list of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(engine=engine, market=market, security=security, ending=CANDLES)
     table = CANDLES
@@ -145,30 +141,30 @@ async def get_board_candles(
     engine: str = DEFAULT_ENGINE,
     columns: Iterable[str] | None = ("begin", "open", "high", "low", "close", "volume"),
 ) -> client.Table:
-    """Получить свечи в формате HLOCV указанного инструмента в указанном режиме торгов за интервал дат.
+    """Get candles in HLOCV format for the specified instrument in the specified trading mode for a date interval.
 
-    Описание запроса - https://iss.moex.com/iss/reference/46
+    Request description - https://iss.moex.com/iss/reference/46
 
     :param client:
-        HTTP клиент.
+        HTTP client.
     :param security:
-        Тикер ценной бумаги.
+        Ticker symbol of the security.
     :param interval:
-        Размер свечки - целое число 1 (1 минута), 10 (10 минут), 60 (1 час), 24 (1 день), 7 (1 неделя),
-        31 (1 месяц) или 4 (1 квартал). По умолчанию дневные данные.
+        Candle size - an integer 1 (1 minute), 10 (10 minutes), 60 (1 hour), 24 (1 day), 7 (1 week),
+        31 (1 month), or 4 (1 quarter). Default is daily data.
     :param start:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены с начала истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded from the beginning of history.
     :param end:
-        Дата вида ГГГГ-ММ-ДД. При отсутствии данные будут загружены до конца истории.
+        Date in the format YYYY-MM-DD. If absent, data will be loaded until the end of history.
     :param board:
-        Режим торгов - по умолчанию основной режим торгов T+2.
+        Trading mode - default is the main trading mode T+2.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        A list of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(
         engine=engine,

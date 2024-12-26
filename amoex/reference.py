@@ -1,4 +1,4 @@
-"""Функции для получения справочной информации."""
+"""Functions for obtaining reference information."""
 from collections.abc import Iterable
 
 import httpx
@@ -11,22 +11,22 @@ async def get_reference(
     http_client: httpx.AsyncClient,
     placeholder: str = "boards"
 ) -> client.Table:
-    """Получить перечень доступных значений плейсхолдера в адресе запроса.
+    """Get a list of available placeholder values in the request address.
 
-    Например в описание запроса https://iss.moex.com/iss/reference/32 присутствует следующий адрес
-    /iss/engines/[engine]/markets/[market]/boards/[board]/securities с плейсхолдерами engines, markets и
+    For example, in the request description https://iss.moex.com/iss/reference/32, the following address
+    /iss/engines/[engine]/markets/[market]/boards/[board]/securities contains placeholders engines, markets, and
     boards.
 
-    Описание запроса - https://iss.moex.com/iss/reference/28
+    Request description - https://iss.moex.com/iss/reference/28
 
     :param http_client:
-        Http клиент.
+        Http client.
     :param placeholder:
-        Наименование плейсхолдера в адресе запроса: engines, markets, boards, boardgroups, durations,
+        Name of the placeholder in the request address: engines, markets, boards, boardgroups, durations,
         securitytypes, securitygroups, securitycollections.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        List of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(ending="index")
     return await request_helpers.get_short_data(http_client, url, placeholder)
@@ -37,23 +37,22 @@ async def find_securities(
     string: str,
     columns: Iterable[str] | None = ("secid", "regnumber"),
 ) -> client.Table:
-    """Найти инструменты по части Кода, Названию, ISIN, Идентификатору Эмитента, Номеру гос.регистрации.
+    """Find instruments by part of the Code, Name, ISIN, Issuer ID, State Registration Number.
 
-    Один из вариантов использования - по регистрационному номеру узнать предыдущие тикеры эмитента, и с
-    помощью нескольких запросов об истории котировок собрать длинную историю с использованием всех
-    предыдущих тикеров.
+    One use case is to find previous tickers of an issuer by registration number and use multiple
+    historical quote requests to compile a long history using all previous tickers.
 
-    Описание запроса - https://iss.moex.com/iss/reference/5
+    Request description - https://iss.moex.com/iss/reference/5
 
     :param http_client:
-        Http клиент.
+        Http client.
     :param string:
-        Часть Кода, Названия, ISIN, Идентификатора Эмитента, Номера гос.регистрации.
+        Part of the Code, Name, ISIN, Issuer ID, State Registration Number.
     :param columns:
-        Кортеж столбцов, которые нужно загрузить - по умолчанию тикер и номер государственно регистрации.
-        Если пустой или None, то загружаются все столбцы.
+        Tuple of columns to load - by default, ticker and state registration number.
+        If empty or None, all columns are loaded.
 
-    :return: Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+    :return: List of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(ending=SECURITIES)
     table = SECURITIES
@@ -68,24 +67,23 @@ async def get_statistics_series(
     market: str = 'forts',
     engine: str = 'futures',
 ) -> client.Table:
-    """Получить список статистики
-
+    """Get a list of statistics.
 
     https://iss.moex.com/iss/reference/151
 
     :param http_client:
-        HTTP клиент.
+        HTTP client.
     :param asset_code:
-        Код базового актива
+        Base asset code.
     :param show_expired:
-        Показывать уже не торгующиеся серии
+        Show already non-trading series.
     :param market:
-        Рынок - по умолчанию акции.
+        Market - default is stocks.
     :param engine:
-        Движок - по умолчанию акции.
+        Engine - default is stocks.
 
     :return:
-        Список словарей, которые напрямую конвертируется в pandas.DataFrame.
+        List of dictionaries that can be directly converted into a pandas.DataFrame.
     """
     url = request_helpers.make_url(
         statistics=True,

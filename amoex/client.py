@@ -11,14 +11,14 @@ WebQuery = dict[str, str | int]
 
 
 class ISSMoexError(Exception):
-    """Ошибки во время обработки запросов."""
+    """Errors during request processing."""
 
 
 def _cursor_block_size(start: int, cursor_table: Table) -> int:
     cursor, *wrong_data = cursor_table
 
     if wrong_data or cast(int, cursor["INDEX"]) != start:
-        raise ISSMoexError(f"Некорректные данные history.cursor: {cursor_table}")
+        raise ISSMoexError(f"Incorrect data in history.cursor: {cursor_table}")
 
     block_size = cast(int, cursor["PAGESIZE"])
 
@@ -28,53 +28,53 @@ def _cursor_block_size(start: int, cursor_table: Table) -> int:
 
 
 class ISSClient(AsyncIterable[TablesDict]):
-    """Асинхронный клиент для MOEX ISS - может быть использован с async for.
+    """Asynchronous client for MOEX ISS - can be used with async for.
 
-    Загружает данные для простых ответов с помощью метода get. Для ответов состоящих из нескольких блоков
-    поддерживается протокол асинхронного генератора отдельных блоков или метод get_all для их
-    автоматического сбора.
+    Loads data for simple responses using the get method. For responses consisting of multiple blocks,
+    the asynchronous generator protocol for individual blocks or the get_all method for their
+    automatic collection is supported.
     """
 
     def __init__(self, http_client: httpx.AsyncClient, url: str, query: WebQuery | None = None) -> None:
-        """MOEX ISS является REST сервером.
+        """MOEX ISS is a REST server.
 
-        Полный перечень запросов и параметров к ним https://iss.moex.com/iss/reference/
-        Дополнительное описание https://fs.moex.com/files/6523
+        Full list of requests and their parameters https://iss.moex.com/iss/reference/
+        Additional description https://fs.moex.com/files/6523
 
         :param http_client:
-            HTTP клиент для соединений.
+            HTTP client for connections.
         :param url:
-            Адрес запроса.
+            Request address.
         :param query:
-            Перечень дополнительных параметров запроса. К списку дополнительных параметров всегда
-            добавляется требование предоставить ответ в виде расширенного json без метаданных.
+            List of additional request parameters. The list of additional parameters always
+            includes the requirement to provide the response as an extended json without metadata.
         """
         self._client = http_client
         self._url = url
         self._query = query or {}
 
     def __repr__(self) -> str:
-        """Наименование класса и содержание запроса к ISS Moex."""
+        """Class name and content of the request to ISS Moex."""
         class_name = self.__class__.__name__
         return f"{class_name}(url={self._url}, query={self._query})"
 
     def __aiter__(self) -> AsyncIterator[TablesDict]:
-        """Асинхронный генератор по ответам состоящим из нескольких блоков."""
+        """Asynchronous generator for responses consisting of multiple blocks."""
         return self._iterator_maker()
 
     async def get(self, start: int | None = None) -> TablesDict:
-        """Загрузка данных.
+        """Data loading.
 
         :param start:
-            Номер элемента с которого нужно загрузить данные. Используется для дозагрузки данных,
-            состоящих из нескольких блоков. При отсутствии данные загружаются с начального элемента.
+            Element number from which to load data. Used for additional data loading,
+            consisting of multiple blocks. If absent, data is loaded from the initial element.
 
         :return:
-            Блок данных с отброшенной вспомогательной информацией - словарь, каждый ключ которого
-            соответствует одной из таблиц с данными. Таблицы являются списками словарей, которые напрямую
-            конвертируются в pandas.DataFrame.
+            Data block with auxiliary information discarded - a dictionary, each key of which
+            corresponds to one of the data tables. Tables are lists of dictionaries that are directly
+            converted to pandas.DataFrame.
         :raises ISSMoexError:
-            Ошибка при обращении к ISS Moex.
+            Error when accessing ISS Moex.
         """
         url = self._url
         query = self._make_query(start)
@@ -84,17 +84,18 @@ class ISSClient(AsyncIterable[TablesDict]):
             raw_respond: list[dict[str, Table]] = response.json()
             return raw_respond[1]
         except httpx.RequestError as err:
-            raise ISSMoexError("Ошибка подключения", err.request.url) from err
+            raise ISSMoexError("Connection error", err.request.url) from err
         except httpx.HTTPStatusError as err:
-            raise ISSMoexError("Ошибка HTTP", err.request.url) from err
+            raise ISSMoexError("HTTP error", err.request.url) from err
+
 
     async def get_all(self) -> TablesDict:
-        """Собирает все блоки данных для запросов.
+        """Collects all data blocks for requests.
 
         :return:
-            Объединенные из всех блоков данные с отброшенной вспомогательной информацией - словарь,
-            каждый ключ которого соответствует одной из таблиц с данными. Таблицы являются списками
-            словарей, которые напрямую конвертируются в pandas.DataFrame.
+            Combined data from all blocks with auxiliary information discarded - a dictionary,
+            each key of which corresponds to one of the data tables. Tables are lists of
+            dictionaries that are directly converted to pandas.DataFrame.
         """
         all_data: TablesDict = {}
         async for block in self:
@@ -102,12 +103,14 @@ class ISSClient(AsyncIterable[TablesDict]):
                 all_data.setdefault(table_name, []).extend(table_rows)
         return all_data
 
+
     def _make_query(self, start: int | None = None) -> WebQuery:
-        """Формирует параметры запроса."""
+        """Forms the query parameters."""
         query: WebQuery = {"iss.json": "extended", "iss.meta": "off"} | self._query
         if start:
             query["start"] = start
         return query
+
 
     async def _iterator_maker(self) -> AsyncIterator[TablesDict]:
         start = 0
